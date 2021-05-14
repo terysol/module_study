@@ -52,6 +52,7 @@
 
 // ------------------------------------------------------------------------------------------
 
+/*
 new Promise(function(resolve, reject) {
     setTimeout(() => resolve(1), 1000);
 }).then(function(result) {          // then 하게 되면 프라미스 객체를 리턴해줘야 한다. -> 내부적으로 프라미스 객체를 만들어줌.
@@ -68,3 +69,95 @@ new Promise(function(resolve, reject) {
     console.log(result); // 4
     return result * 2;
 });
+*/
+
+
+// ------------------------------------------------------------------------------------------
+// 작업 중간 예외 발생할 경우 catch 블록으로 이동
+/*
+new Promise(function(resolve, reject) {
+    setTimeout(() => resolve(1), 1000);
+}).then(function(result) {
+    console.log(result)
+    // 연속적인 비동기 작업 진행
+    return new Promise(resolve => {
+        setTimeout(() => {
+            resolve(result * 2)
+        }, 1000)
+    });
+    // 콜백 지옥 문제 없이 then으로 결과 받아내기
+}).then(function(result) {
+    console.log(result)
+    // 또 다른 연속적인 비동기 작업 진행
+    return new Promise(resolve => {
+        setTimeout(() => {
+            resolve(result * 2)
+        }, 1000)
+    });
+}).then(function(result) {
+    console.log(result)
+});
+ */
+
+// ------------------------------------------------------------------------------------------
+/*
+// 작업 중간 예외 발생할 경우 catch 블록으로 이동
+new Promise(function(resolve, reject) {
+    setTimeout(() => {
+        // 초기 작업 진행
+        // throw new Error("error 1");
+        try{
+            throw new Error("error 1");
+            resolve(1);
+        }catch(e){
+            reject(e);
+        }
+
+    }, 1000); // (*)
+})
+    .then(function(result) {
+        // 중간 작업 진행
+        // throw new Error("error 2");
+        console.log(result);
+        return result * 2;
+    })
+    .then(function(result) {
+        // 마지막 최종 작업 진행
+        // throw new Error("error 3");
+        console.log(result);
+    })
+    // Promise 생성시 전달한 함수 및 체이닝 함수 내부에서 발생한 에러는 모두 여기서 처리 가능
+    .catch(function(e) {
+        console.log('catch!!!!');
+        console.log(e);
+    });
+
+ */
+// ------------------------------------------------------------------------------------------
+/*
+Promise.all([     // 모든 promise가 resolve()일 때 then()을 실행
+    new Promise(resolve => setTimeout(() => resolve(1), 3000)), // 1
+    new Promise(resolve => setTimeout(() => resolve(2), 2000)), // 2
+    new Promise((resolve,reject) => setTimeout(() => {
+        // 어떤 Promise 내부에서든, 실패하면 catch 블록으로 이동
+        try{
+            throw new Error("error 3");
+            resolve(3);
+        }catch(e){
+            reject(e);
+        }
+
+    }, 1000)) // 3
+])
+    .then(result => {
+        // 프라미스 전체가 성공적으로 처리되면 배열([1, 2, 3])이 반환됨,
+        // (즉, 각 프라미스의 결과값이 배열을 구성하는 요소가 됨)
+        console.log(result);
+    })
+    .catch(e => {
+        // 프라미스 중 하나라도 실패하면, 모두 실패한 것으로 처리되고 catch 블록으로 이동
+
+        console.log(e);
+    });
+
+ */
